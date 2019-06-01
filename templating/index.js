@@ -11,6 +11,60 @@ const hexTable = [
   '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'
 ]
 
+function makeTerminal(v) {
+  if (typeof v === 'function') {
+    return [v()]
+  }
+
+  return [v]
+}
+
+function makeOperator(op, left, right) {
+  return [op, left, right]
+}
+
+function asString(node) {
+  if (!node) {
+    return '?'
+  }
+
+  if (node && node.value) {
+    return node.value.toString()
+  } else {
+    return node.toString()
+  }
+}
+
+function serializeNode(node, parens = false, contextPriority = -1, depth = 0) {
+  const isTerminal = node.length === 1
+  if (isTerminal) {
+    return asString(node[0])
+  } else {
+    const [op, left, right] = node
+    let priority = 0
+    if (op.priority) {
+      priority = op.priority
+    }
+
+    function wrap(x) {
+      if (depth === 0) {
+        return x
+      }
+
+      if (parens || priority < contextPriority) {
+        return '(' + x + ')'
+      } else {
+        return x
+      }
+    }
+
+    return wrap(
+      serializeNode(left, parens, priority, depth + 1)
+      + asString(op)
+      + serializeNode(right, parens, priority, depth + 1))
+  }
+}
+
 class Random {
   bin(len, chunksize = 0) {
     let str = ''
@@ -35,6 +89,69 @@ class Random {
     } else {
       return result.join('')
     }
+  }
+
+  bool() {
+    return this.int(2) === 1
+  }
+
+  shuffle(array) {
+    return _.sortBy(array, () => Math.random())
+  }
+
+  ast(nodes, ops, config = {}) {
+    const addedNodes = []
+    const addedOps = []
+
+    if (typeof config === 'number') {
+      config = { maxOps: config }
+    }
+
+    const {
+      maxOps = 1,
+      maxDepth = 3,
+      parens = true
+    } = config
+
+    let i = 0
+    const makeNode = (depth = 0) => {
+      if (i >= maxOps || depth >= maxDepth) {
+        let node = this.choice(nodes)
+        if (addedNodes.includes(node)) {
+          node = this.choice(nodes)
+        }
+
+        if (addedNodes.includes(node)) {
+          node = this.choice(nodes)
+        }
+
+        if (!addedNodes.includes(node)) {
+          addedNodes.push(node)
+        }
+
+        return makeTerminal(node)
+      } else {
+        let op = this.choice(ops)
+        if (addedOps.includes(op)) {
+          op = this.choice(ops)
+        }
+
+        if (!addedOps.includes(op)) {
+          addedOps.push(op)
+        }
+
+        i++
+        const [left, right] = this.shuffle([makeNode(depth + 1), makeNode(depth + 1)])
+        return makeOperator(op, left, right)
+      }
+    }
+
+    const root = makeNode()
+    return serializeNode(root, parens)
+  }
+
+  id() {
+    return this.hex(16)
   }
 
   exp2(min, max) {
@@ -100,7 +217,7 @@ async function main(args) {
 
   if (purge) {
     try {
-      rimraf.sync(resolvedOutdir)
+      rimraf.sync(resolvedOutdir + '/*')
     } catch (e) {
       // ignored
     }
@@ -156,6 +273,7 @@ async function main(args) {
 
     const result = compiledTemplate(data)
     fs.writeFileSync(outfile, result)
+
     const cmdstr = cmdTemplate(data)
     if (cmdstr) {
       console.debug(`Running ${cmdstr}`)
