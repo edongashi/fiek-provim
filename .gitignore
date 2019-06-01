@@ -1,7 +1,16 @@
 afatet/
 grupet/
 zgjidhjet/
-[Gg][Rr]??.*
+[Gg][Rr][Aa].*
+[Gg][Rr][Bb].*
+[Gg][Rr][Cc].*
+[Gg][Rr][Dd].*
+[Gg][Rr]_*
+package-lock.json
+__temp.*
+__latexindent_temp.*
+compiled/
+test.*
 
 # Created by https://www.gitignore.io/api/node,latex,visualstudio
 # Edit at https://www.gitignore.io/?templates=node,latex,visualstudio

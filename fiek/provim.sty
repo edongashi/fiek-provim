@@ -122,7 +122,7 @@ arrow/.style = {semithick,->,>=stealth}
 \newcommand{\pyetje}[2]{
   \vspace{6pt}
   \begin{preventpagebreak}
-    % \addtocounter{Piket}{#1}
+    \addtocounter{Piket}{#1}
     \stepcounter{NumriPyetjes}
     \textbf{\theNumriPyetjes. (#1p)} \trim@pre@space{#2}
   \end{preventpagebreak}
@@ -130,7 +130,7 @@ arrow/.style = {semithick,->,>=stealth}
 
 \newcommand{\cpplst}{
   \lstset{
-    basicstyle=\ttfamily,
+    basicstyle=\ttfamily\small,
     language=C++,
     numbers=left,
     numberstyle=\tiny,
