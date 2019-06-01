@@ -82,13 +82,18 @@ async function main(args) {
     cmd,
     purge
   } = program
+  const resolvedOutdir = path.resolve(outdir)
   if (!file) {
+    if (purge) {
+      rimraf.sync(resolvedOutdir)
+      return
+    }
+
     program.help()
     return
   }
 
   const resolvedFile = path.resolve(file)
-  const resolvedOutdir = path.resolve(outdir)
   const extension = path.extname(resolvedFile)
   const filename = path.basename(resolvedFile)
   const basename = path.basename(resolvedFile, extension)
