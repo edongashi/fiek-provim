@@ -10,6 +10,8 @@
   "author": "Edon Gashi",
   "license": "MIT",
   "dependencies": {
-    "lodash": "^4.17.11"
+    "commander": "^2.20.0",
+    "lodash": "^4.17.11",
+    "rimraf": "^2.6.3"
   }
 }

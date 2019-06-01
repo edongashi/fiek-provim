@@ -6,6 +6,7 @@ zgjidhjet/
 [Gg][Rr][Cc].*
 [Gg][Rr][Dd].*
 [Gg][Rr]_*
+[Ss]habllon*.*
 package-lock.json
 __temp.*
 __latexindent_temp.*
