@@ -4,6 +4,8 @@ const slugify = require('slugify')
 const fs = require('fs')
 const random = require('random-seed')
 const moment = require('moment')
+const { pick } = require('lodash')
+const useragent = require('express-useragent')
 const { table, source, html } = require('./document')
 const { logAction, logEmail } = require('./logging')
 
@@ -21,6 +23,7 @@ fs.mkdirSync(uploadDir, { recursive: true })
 
 const app = express()
 app.use(express.urlencoded({ extended: true }))
+app.use(useragent.express())
 app.use('/static', express.static('static'))
 
 function formatName(name) {
@@ -37,8 +40,10 @@ app.get('/description', (req, res) => {
     return res.redirect('/')
   }
 
+  const { email } = req.query
+
   logAction(req.ip, name, 'description')
-  logEmail(name, req.query.email)
+  logEmail(req.ip, name, email)
 
   const src =
     html({ name, id, seed, rng })
@@ -46,6 +51,7 @@ app.get('/description', (req, res) => {
 <form method="POST" action="/submission" autocomplete="off">
   <h1>Dorëzimi i zgjidhjes</h1>
   <input type="hidden" name="name" value="${name}" />
+  <input type="hidden" name="email" value="${email}" />
   Kodi i zgjidhjes
   <br />
   <textarea rows="10" name="code" required autocomplete="off" autocorrect="off" autocapitalize="off"
@@ -76,8 +82,14 @@ app.get('/markdown', (req, res) => {
     .send(src)
 })
 
+const agentProps = [
+  'platform',
+  'os',
+  'browser'
+]
+
 app.post('/submission', (req, res) => {
-  const { name: rawName, code } = req.body
+  const { name: rawName, email, code } = req.body
   const { name, id, seed, rng } = formatName(rawName)
 
   if (!name) {
@@ -92,9 +104,11 @@ app.post('/submission', (req, res) => {
 
   const stats = {
     Name: name,
+    Email: email,
     Time: longTime,
     IP: req.ip,
-    Seed: seed
+    Seed: seed,
+    ...pick(req.useragent, agentProps)
   }
 
   const submission =

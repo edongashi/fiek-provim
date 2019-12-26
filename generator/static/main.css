@@ -17,8 +17,8 @@
   }
 }
 
-input[type=text], textarea {
-  width: 200px;
+input[type=text], input[type=email], textarea {
+  width: 250px;
   margin-top: 4px;
   margin-bottom: 8px;
 }

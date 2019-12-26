@@ -26,7 +26,7 @@ db
   })
   .write()
 
-function logEmail(name, email) {
+function logEmail(ip, name, email) {
   if (!name || !email) {
     return
   }
@@ -34,7 +34,9 @@ function logEmail(name, email) {
   db
     .merge({
       emails: {
-        [name]: email
+        [name]: {
+          [ip]: email
+        }
       }
     })
     .write()
