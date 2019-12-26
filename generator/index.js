@@ -5,7 +5,7 @@ const fs = require('fs')
 const random = require('random-seed')
 const moment = require('moment')
 const { table, source, html } = require('./document')
-const { logAction } = require('./logging')
+const { logAction, logEmail } = require('./logging')
 
 const salt = slugify(process.argv[2] || '', { lower: true, remove: /[*+~.()'"!:@]/g })
 
@@ -38,6 +38,7 @@ app.get('/description', (req, res) => {
   }
 
   logAction(req.ip, name, 'description')
+  logEmail(name, req.query.email)
 
   const src =
     html({ name, id, seed, rng })

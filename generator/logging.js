@@ -21,9 +21,24 @@ const db = low(new FileSync(logPath))
 db
   .defaults({
     ip: {},
-    name: {}
+    name: {},
+    emails: {}
   })
   .write()
+
+function logEmail(name, email) {
+  if (!name || !email) {
+    return
+  }
+
+  db
+    .merge({
+      emails: {
+        [name]: email
+      }
+    })
+    .write()
+}
 
 function logAction(ip, name, action) {
   const time = moment().format('DD/MM/YY HH:mm:ss')
@@ -40,5 +55,6 @@ function logAction(ip, name, action) {
 }
 
 module.exports = {
+  logEmail,
   logAction
 }
