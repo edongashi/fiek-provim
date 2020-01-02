@@ -110,6 +110,11 @@ function resolve(expr, rng, context = {}) {
       return resolve(pickOne(rest, rng), rng, context)
     }
 
+    if (t === '$camelcase') {
+      const resolved = resolve(rest[0], rng, context)
+      return resolved[0].toLowerCase() + resolved.substr(1)
+    }
+
     if (t === '$seq') {
       return rest
         .map(subexpr => resolve(subexpr, rng, context))
@@ -127,7 +132,8 @@ function resolve(expr, rng, context = {}) {
     if (t.startsWith('$switch:')) {
       const key = t.substr('$switch:'.length)
       const option = context[key]
-      const subexpr = rest[0][option]
+      const container = rest[0]
+      const subexpr = option in container ? container[option] : container.$default
       return resolve(subexpr, rng, context)
     }
 
@@ -140,7 +146,7 @@ function resolve(expr, rng, context = {}) {
     if (typeof expr.$switch === 'string') {
       const key = expr.$switch
       const option = context[key]
-      const subexpr = expr[option]
+      const subexpr = option in expr ? expr[option] : expr.$default
       return resolve(subexpr, rng, newContext)
     }
 
