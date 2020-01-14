@@ -9,13 +9,25 @@ const rehypeWrap = require('rehype-wrap')
 const rehypeStringify = require('rehype-stringify')
 const data = require('./data')
 
+const NL = '\n'
+
 function table(data) {
   const kvs = Object.entries(data)
   const keys = kvs.map(([k, v]) => k).join(' | ')
   const separator = kvs.map(() => '---').join(' | ')
   const values = kvs.map(([k, v]) => v).join(' | ')
-  const nl = '\n'
-  return keys + nl + separator + nl + values
+  return keys + NL + separator + NL + values
+}
+
+function dataTable(data, headings, keys) {
+  let result = headings.join(' | ') + NL + headings.map(() => '---').join(' | ')
+
+  for (const entry of data) {
+    const values = keys.map(key => entry[key] || '')
+    result += NL + values.join(' | ')
+  }
+
+  return result
 }
 
 function build({ name, id, seed, rng }) {
@@ -163,5 +175,6 @@ function resolve(expr, rng, context = {}) {
 module.exports = {
   table,
   source,
-  html
+  html,
+  dataTable
 }

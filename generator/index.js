@@ -6,8 +6,8 @@ const random = require('random-seed')
 const moment = require('moment')
 const { pick } = require('lodash')
 const useragent = require('express-useragent')
-const { table, source, html } = require('./document')
-const { logAction, logEmail } = require('./logging')
+const { dataTable, table, source, html } = require('./document')
+const { logAction, logEmail, userLogs } = require('./logging')
 
 const salt = slugify(process.argv[2] || '', { lower: true, remove: /[*+~.()'"!:@]/g })
 
@@ -115,6 +115,16 @@ app.post('/submission', (req, res) => {
     `# Submission details
 
 ${table(stats)}
+
+## Evaluation
+
+\`\`\`
+
+\`\`\`
+
+## Logs
+
+${dataTable(userLogs(name), ['IP', 'Action', 'Time'], ['ip', 'action', 'time'])}
 
 ---
 

@@ -56,7 +56,12 @@ function logAction(ip, name, action) {
     .write()
 }
 
+function userLogs(name) {
+  return db.get(['name', name], []).value()
+}
+
 module.exports = {
   logEmail,
-  logAction
+  logAction,
+  userLogs
 }
