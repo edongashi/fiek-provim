@@ -1,67 +1,4 @@
-const unified = require('unified')
-const remarkParse = require('remark-parse')
-const remarkMath = require('remark-math')
-const remarkHighlight = require('remark-highlight.js')
-const remarkRehype = require('remark-rehype')
-const rehypeDocument = require('rehype-document')
-const rehypeKatex = require('rehype-katex')
-const rehypeWrap = require('rehype-wrap')
-const rehypeStringify = require('rehype-stringify')
-const data = require('./data')
-
-const NL = '\n'
-
-function table(data) {
-  const kvs = Object.entries(data)
-  const keys = kvs.map(([k, v]) => k).join(' | ')
-  const separator = kvs.map(() => '---').join(' | ')
-  const values = kvs.map(([k, v]) => v).join(' | ')
-  return keys + NL + separator + NL + values
-}
-
-function dataTable(data, headings, keys) {
-  let result = headings.join(' | ') + NL + headings.map(() => '---').join(' | ')
-
-  for (const entry of data) {
-    const values = keys.map(key => entry[key] || '')
-    result += NL + values.join(' | ')
-  }
-
-  return result
-}
-
-function build({ name, id, seed, rng }) {
-  return resolve(data, rng, { name, id, seed })
-}
-
-function source(params) {
-  return build(params)
-    .replace('\\_\\_DATA_AFTER\\_\\_', '')
-    .trim()
-}
-
-function html(params) {
-  const src = build(params)
-  return unified()
-    .use(remarkParse)
-    .use(remarkHighlight)
-    .use(remarkMath)
-    .use(remarkRehype)
-    .use(rehypeDocument, {
-      title: 'Detyra',
-      css: [
-        '/static/gfm.css',
-        '/static/highlight.css',
-        '/static/katex/katex.min.css',
-        '/static/main.css'
-      ]
-    })
-    .use(rehypeWrap, { wrapper: 'div.markdown-body' })
-    .use(rehypeKatex)
-    .use(rehypeStringify)
-    .processSync(src)
-    .toString()
-}
+const { render } = require('./render')
 
 function pickOne(arr, rng) {
   return arr[rng.range(arr.length)]
@@ -172,9 +109,22 @@ function resolve(expr, rng, context = {}) {
   return expr.toString()
 }
 
+function build(expr, rng, context) {
+  return resolve(expr, rng, context)
+}
+
+function generateMarkdown(expr, rng, context) {
+  return build(expr, rng, context)
+    .replace('\\_\\_DATA_AFTER\\_\\_', '')
+    .trim()
+}
+
+function generateHtml(expr, rng, context) {
+  const src = build(expr, rng, context)
+  return render(src)
+}
+
 module.exports = {
-  table,
-  source,
-  html,
-  dataTable
+  generateMarkdown,
+  generateHtml
 }
