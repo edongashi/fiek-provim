@@ -6,6 +6,8 @@ const useragent = require('express-useragent')
 const serveIndex = require('serve-index')
 const { render } = require('./render')
 const { STATIC, getSubmissionsDir } = require('../paths')
+const session = require('express-session')
+const flash = require('flash')
 
 function skip(req) {
   let path = req.originalUrl
@@ -29,10 +31,22 @@ function createApp(init) {
   const app = express()
   const uploadsDir = getSubmissionsDir()
   const accessLogStream = fs.createWriteStream(path.join(uploadsDir, 'access.log'), { flags: 'a' })
+  app.use(session({
+    secret: 'fiek2018',
+    resave: false,
+    saveUninitialized: false
+  }))
+
+  app.use(flash())
   app.use(morgan('combined', { stream: accessLogStream, skip }))
   app.use(express.urlencoded({ extended: true }))
   app.use(useragent.express())
   app.use('/static', express.static(STATIC))
+
+  app.get('/*', function (req, res, next) {
+    req.session.flash = []
+    next()
+  })
 
   function renderMarkdown(req, res, next) {
     if (req.path.match(/\.md$/i) && req.method === 'GET') {

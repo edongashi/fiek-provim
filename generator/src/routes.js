@@ -22,12 +22,26 @@ if (fs.existsSync(mdPath)) {
   expr = require('../data')
 }
 
-function buildHtml(context) {
+function flashesToMd(flashes) {
+  if (!Array.isArray(flashes) || flashes.length === 0) {
+    return ''
+  }
+
+  return flashes.map(f => f.message).join('\n\n') + '\n\n'
+}
+
+function buildHtml(context, flashes) {
+  const header = flashesToMd(flashes)
+
   if (precompiled) {
+    if (header) {
+      return render(header + expr + '\n\n\\_\\_DATA\_AFTER\\_\\_')
+    }
+
     return precompiled
   }
 
-  return generateHtml(expr, context.rng, context)
+  return generateHtml(expr, context.rng, context, header)
 }
 
 function buildMarkdown(context) {
@@ -73,7 +87,7 @@ const getDescriptionHtml = (req, res) => {
     return res.redirect('/')
   }
 
-  const htmlSrc = buildHtml(context)
+  const htmlSrc = buildHtml(context, res.locals.flash)
     .replace('<p>__DATA_AFTER__</p>', submitForm(context))
 
   res
@@ -133,14 +147,23 @@ const postSubmission = async (req, res) => {
   const sourceSavePath = path.join(commonDir, fileName + '.cpp')
   try {
     await fs.promises.writeFile(sourceSavePath, context.code, 'utf8')
+    req.flash(`**Dorëzimi juaj është ruajtur me sukses (${context.idSlug}-${context.nameSlug}-${shortTime} IP ${req.ip}).**`)
     compilation = await compile(sourceSavePath)
     console.log(`Compilation ${compilation.status} for ${displayString}`)
   } catch (e) {
+    req.flash(`Ka dështuar dorëzimi, ju lutem kontaktojeni mësimdhënësin (${displayString}).`)
     console.error(`Error saving/compiling source ${displayString}`)
     console.error(e)
   }
 
   compilation.status = fancyStatus(compilation.status)
+
+  let compilerFlash = `Statusi i kompajllimit: **${compilation.status}**`
+  if (compilation.log) {
+    compilerFlash += `\n\n\`\`\`\n${compilation.log}\n\`\`\``
+  }
+
+  req.flash(compilerFlash)
 
   const stats1 = {
     ID: context.id,
