@@ -19,7 +19,7 @@ function dataTable(data, headings, keys) {
   return result
 }
 
-function formatSubmission(stats1, stats2, problem, solution) {
+function formatSubmission(stats1, stats2, compilation, problem, solution) {
   const submission =
     `# Submission details
 
@@ -33,12 +33,20 @@ ${problem}
 
 ---
 
-# Solution
+# Submission
+
+Compilation status: **${compilation.status}**
 
 \`\`\`cpp
 ${(solution || '').trim()}
 \`\`\`
-`
+
+${compilation.log && `Compiler output:
+
+\`\`\`
+${compilation.log}
+\`\`\`
+`}`
 
   return submission
 }

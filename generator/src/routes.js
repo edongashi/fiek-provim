@@ -7,6 +7,7 @@ const { generateHtml, generateMarkdown } = require('./lib/document')
 const { formatSubmission } = require('./formatting')
 const { ROOT, STATIC, getSubmissionsDir } = require('./paths')
 const { render } = require('./lib/render')
+const { compile } = require('./compiler')
 const random = require('random-seed')
 const moment = require('moment')
 
@@ -101,7 +102,16 @@ const agentProps = [
   'browser'
 ]
 
-const postSubmission = (req, res) => {
+function fancyStatus(status) {
+  switch (status) {
+    case 'OK': return 'OK ✔️'
+    case 'FAILED': return 'FAILED ❌'
+    case 'UNKNOWN': return 'UNKNOWN ⚠️'
+    default: return status
+  }
+}
+
+const postSubmission = async (req, res) => {
   const context = buildContext(req.body)
   context.code = req.body.code || ''
 
@@ -116,11 +126,28 @@ const postSubmission = (req, res) => {
     return res.redirect('/')
   }
 
+  let compilation = { status: 'UNKOWN', log: '' }
+  const fileName = `${context.idSlug}-${context.nameSlug}-${shortTime}`
+
+  const commonDir = getSubmissionsDir('common')
+  const sourceSavePath = path.join(commonDir, fileName + '.cpp')
+  try {
+    await fs.promises.writeFile(sourceSavePath, context.code, 'utf8')
+    compilation = await compile(sourceSavePath)
+    console.log(`Compilation ${compilation.status} for ${displayString}`)
+  } catch (e) {
+    console.error(`Error saving/compiling source ${displayString}`)
+    console.error(e)
+  }
+
+  compilation.status = fancyStatus(compilation.status)
+
   const stats1 = {
     ID: context.id,
     Name: context.name,
     Teacher: context.teacher,
     Time: longTime,
+    Compilation: compilation.status
   }
 
   const stats2 = {
@@ -129,13 +156,12 @@ const postSubmission = (req, res) => {
     ...pick(req.useragent, agentProps)
   }
 
-  const fileName = `${context.idSlug}-${context.nameSlug}-${shortTime}.md`
+  const submission = formatSubmission(stats1, stats2, compilation, buildMarkdown(context), context.code)
+
   const uploadDir = getSubmissionsDir(context.teacherSlug)
-  const savePath = path.join(uploadDir, fileName)
+  const savePath = path.join(uploadDir, fileName + '.md')
 
-  const submission = formatSubmission(stats1, stats2, buildMarkdown(context), context.code)
-
-  fs.writeFile(savePath, submission, (err) => {
+  fs.writeFile(savePath, submission, err => {
     if (err) {
       console.error(`Error saving submission ${displayString}`)
       console.error(err)
