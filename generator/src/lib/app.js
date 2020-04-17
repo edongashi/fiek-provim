@@ -6,6 +6,7 @@ const useragent = require('express-useragent')
 const serveIndex = require('serve-index')
 const { render } = require('./render')
 const { STATIC, getSubmissionsDir } = require('../paths')
+const { password } = require('../config')
 const session = require('express-session')
 const flash = require('flash')
 
@@ -25,6 +26,14 @@ function skip(req) {
   }
 
   return false;
+}
+
+const authenticate = (req, res, next) => {
+  if (req.session.authenticated) {
+    return next()
+  } else {
+    res.redirect('/login')
+  }
 }
 
 function createApp(init) {
@@ -66,7 +75,23 @@ function createApp(init) {
     }
   }
 
+  const loginPath = path.join(STATIC, 'login.html')
+
+  app.get('/login', (req, res) => {
+    res.sendFile(loginPath)
+  })
+
+  app.post('/login', (req, res) => {
+    if (req.body.password === password) {
+      req.session.authenticated = true
+      return res.redirect('/submissions')
+    } else {
+      return res.redirect('/login')
+    }
+  })
+
   app.use('/submissions',
+    authenticate,
     renderMarkdown,
     express.static(uploadsDir),
     serveIndex(uploadsDir, { icons: true }),

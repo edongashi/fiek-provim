@@ -1,5 +1,5 @@
 const { createApp } = require('./lib/app')
-const { salt, port } = require('./config')
+const { salt, port, password } = require('./config')
 const {
   getIndex,
   getDescriptionHtml,
@@ -8,8 +8,9 @@ const {
 } = require('./routes')
 
 createApp(app => {
-  console.log(`Using port '${port}'`)
   console.log(`Using salt '${salt}'`)
+  console.log(`Using port '${port}'`)
+  console.log(`Using password '${password}'`)
 
   app.get('/description/raw', getDescriptionMarkdown)
   app.get('/description', getDescriptionHtml)
