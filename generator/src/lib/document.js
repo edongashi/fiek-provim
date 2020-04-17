@@ -119,8 +119,8 @@ function generateMarkdown(expr, rng, context) {
     .trim()
 }
 
-function generateHtml(expr, rng, context) {
-  const src = build(expr, rng, context)
+function generateHtml(expr, rng, context, header = '') {
+  const src = header + build(expr, rng, context)
   return render(src)
 }
 
