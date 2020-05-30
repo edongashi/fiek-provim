@@ -196,43 +196,46 @@ const postSubmission = async (req, res) => {
     await fs.promises.writeFile(jsonSavePath, JSON.stringify({
       stats1,
       stats2,
-      context
+      context,
+      shortTime,
+      longTime
     }, null, 2), 'utf8')
   } catch (e) {
     console.error(`Error saving json ${displayString}`)
     console.error(e)
   }
 
-  try {
-    req.pool
-      .evaluate({
-        stats1,
-        stats2,
-        context
-      })
-      .then(
-        result => {
-          const uploadDir = getSubmissionsDir(context.teacherSlug, 'eval')
-          const scoresPath = path.join(uploadDir, 'scores.csv')
-          fs.appendFile(scoresPath, `="${context.id}",="${context.name}",="${now.format('HH:mm:ss')}",${result.scores.join(',')},${result.totalScore}\n`, e => {
-            if (e) {
-              console.error(`Error appending score for ${displayString}`)
-              console.error(e)
-            }
-          })
-        },
-        e => {
-          console.error(`Evaluation worker failed for ${displayString}`)
-          console.error(e)
-        })
-      .catch(e => {
-        console.error(`Unknown error during evaluation for ${displayString}`)
-        console.error(e)
-      })
-  } catch (e) {
-    console.error(`Error running evaluation worker ${displayString}`)
-    console.error(e)
-  }
+  // try {
+  //   req.pool
+  //     .evaluate({
+  //       stats1,
+  //       stats2,
+  //       context,
+  //       shortTime
+  //     })
+  //     .then(
+  //       result => {
+  //         const uploadDir = getSubmissionsDir(context.teacherSlug, 'eval')
+  //         const scoresPath = path.join(uploadDir, 'scores.csv')
+  //         fs.appendFile(scoresPath, `="${context.id}",="${context.name}",="${now.format('HH:mm:ss')}",${result.scores.join(',')},${result.totalScore}\n`, e => {
+  //           if (e) {
+  //             console.error(`Error appending score for ${displayString}`)
+  //             console.error(e)
+  //           }
+  //         })
+  //       },
+  //       e => {
+  //         console.error(`Evaluation worker failed for ${displayString}`)
+  //         console.error(e)
+  //       })
+  //     .catch(e => {
+  //       console.error(`Unknown error during evaluation for ${displayString}`)
+  //       console.error(e)
+  //     })
+  // } catch (e) {
+  //   console.error(`Error running evaluation worker ${displayString}`)
+  //   console.error(e)
+  // }
 
   const encodedName = encodeURIComponent(context.name)
   const encodedId = encodeURIComponent(context.id)

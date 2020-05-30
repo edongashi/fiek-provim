@@ -8,17 +8,6 @@ function objectTable(data) {
   return keys + NL + separator + NL + values
 }
 
-function dataTable(data, headings, keys) {
-  let result = headings.join(' | ') + NL + headings.map(() => '---').join(' | ')
-
-  for (const entry of data) {
-    const values = keys.map(key => entry[key] || '')
-    result += NL + values.join(' | ')
-  }
-
-  return result
-}
-
 function formatSubmission(stats1, stats2, compilation, problem, solution) {
   const submission =
     `# Submission details
@@ -52,5 +41,6 @@ ${compilation.log}
 }
 
 module.exports = {
+  objectTable,
   formatSubmission
 }

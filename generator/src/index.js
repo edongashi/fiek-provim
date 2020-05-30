@@ -6,11 +6,17 @@ const {
   getDescriptionMarkdown,
   postSubmission
 } = require('./routes')
+const workerpool = require('workerpool')
 
-createApp(app => {
+createApp(async app => {
   console.log(`Using salt '${salt}'`)
   console.log(`Using port '${port}'`)
   console.log(`Using password '${password}'`)
+  const pool = await workerpool.pool(__dirname + '/worker.js').proxy()
+  app.use((req, _res, next) => {
+    req.pool = pool
+    next()
+  })
 
   app.get('/description/raw', getDescriptionMarkdown)
   app.get('/description', getDescriptionHtml)
