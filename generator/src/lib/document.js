@@ -47,6 +47,10 @@ function resolve(expr, rng, context = {}) {
     return ''
   }
 
+  if (typeof expr === 'function') {
+    return resolve(expr(rng, context))
+  }
+
   if (typeof expr === 'string') {
     const entries = Object.entries(context)
     entries.sort(([k1], [k2]) => k2.length - k1.length)
