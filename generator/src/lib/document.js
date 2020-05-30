@@ -49,7 +49,7 @@ function resolve(expr, rng, context = {}) {
   }
 
   if (typeof rng === 'string') {
-    rng = random.create(seed)
+    rng = random.create(rng)
   }
 
   if (typeof expr === 'function') {
