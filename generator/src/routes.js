@@ -191,6 +191,18 @@ const postSubmission = async (req, res) => {
     }
   })
 
+  const jsonSavePath = path.join(commonDir, fileName + '.json')
+  try {
+    await fs.promises.writeFile(jsonSavePath, JSON.stringify({
+      stats1,
+      stats2,
+      context
+    }, null, 2), 'utf8')
+  } catch (e) {
+    console.error(`Error saving json ${displayString}`)
+    console.error(e)
+  }
+
   const encodedName = encodeURIComponent(context.name)
   const encodedId = encodeURIComponent(context.id)
   const encodedTeacher = encodeURIComponent(context.teacher)
