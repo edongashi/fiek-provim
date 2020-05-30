@@ -13,7 +13,7 @@ function makeid(length) {
 
 const salt = process.argv[2] || 'default'
 const port = process.argv[3] || 3000
-const password = process.argv[4] || makeid(6)
+const password = process.argv[4] || process.env.PASSWORD || makeid(6)
 
 module.exports = {
   salt: slugify(salt, { lower: true, remove: /[*+~.()'"!:@]/g }),

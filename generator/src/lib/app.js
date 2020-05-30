@@ -8,6 +8,7 @@ const { render } = require('./render')
 const { STATIC, getSubmissionsDir } = require('../paths')
 const { password } = require('../config')
 const session = require('express-session')
+const sha1 = require('sha1')
 const flash = require('flash')
 
 function skip(req) {
@@ -30,6 +31,8 @@ function skip(req) {
 
 const authenticate = (req, res, next) => {
   if (req.session.authenticated) {
+    return next()
+  } else if (req.query.hash && sha1(password + req.path) === req.query.hash) {
     return next()
   } else {
     res.redirect('/login')
@@ -65,10 +68,12 @@ function createApp(init) {
           return next()
         }
 
+        const sharing = req.protocol + '://' + req.get('Host') + '/submissions' + req.path + '?hash=' + sha1(password + req.path)
+
         res
           .type('text/html')
           .status(200)
-          .send(render(content))
+          .send(render(`${content}\n\n---\n\n[Sharing link](${sharing})`))
       })
     } else {
       return next()
