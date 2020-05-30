@@ -1,4 +1,5 @@
 const { render } = require('./render')
+const random = require('random-seed')
 
 function pickOne(arr, rng) {
   return arr[rng.range(arr.length)]
@@ -45,6 +46,10 @@ function replace(text, pattern, replacement) {
 function resolve(expr, rng, context = {}) {
   if (!expr) {
     return ''
+  }
+
+  if (typeof rng === 'string') {
+    rng = random.create(seed)
   }
 
   if (typeof expr === 'function') {

@@ -8,7 +8,6 @@ const { formatSubmission } = require('./formatting')
 const { ROOT, STATIC, getSubmissionsDir } = require('./paths')
 const { render } = require('./lib/render')
 const { compile } = require('./compiler')
-const random = require('random-seed')
 const moment = require('moment')
 
 let expr = null
@@ -41,7 +40,7 @@ function buildHtml(context, flashes) {
     return precompiled
   }
 
-  return generateHtml(expr, context.rng, context, header)
+  return generateHtml(expr, context.seed, context, header)
 }
 
 function buildMarkdown(context) {
@@ -49,7 +48,7 @@ function buildMarkdown(context) {
     return expr
   }
 
-  return generateMarkdown(expr, context.rng, context)
+  return generateMarkdown(expr, context.seed, context)
 }
 
 function buildContext({ id, name, teacher }) {
@@ -60,8 +59,7 @@ function buildContext({ id, name, teacher }) {
   const nameSlug = slugify(name, { lower: true, remove: /[*+~.()'"!:@]/g })
   const teacherSlug = slugify(teacher, { lower: true, remove: /[*+~.()'"!:@]/g })
   const seed = salt + '-' + idSlug + '-rng'
-  const rng = random.create(seed)
-  return { id, name, teacher, idSlug, nameSlug, teacherSlug, seed, rng }
+  return { id, name, teacher, idSlug, nameSlug, teacherSlug, seed }
 }
 
 function submitForm({ id, name, teacher }) {
