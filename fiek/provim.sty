@@ -13,6 +13,7 @@
 \usepackage{etoolbox}
 \usepackage{trimspaces}
 \usepackage{comment}
+\usepackage{ifthen}
 \usepackage{tikz}
 \usetikzlibrary{arrows, positioning, shapes.geometric}
 \setmonofont{Consolas}
@@ -39,7 +40,7 @@
 }
 
 \fancyhead[C]{
-  \textbf{UNIVERSITETI I PRISHTINËS "HASAN PRISHTINA"} \\
+  \textbf{UNIVERSITETI I PRISHTINËS ``HASAN PRISHTINA''} \\
   \textbf{FAKULTETI I INXHINIERISË ELEKTRIKE DHE KOMPJUTERIKE} \\
   \vspace{4pt}
   \begin{small}
@@ -55,7 +56,6 @@
 
 \newcounter{NumriPyetjes}
 \newcounter{Piket}
-
 
 \tikzset{flowchart/.style = {
 base/.style = {draw=black, inner sep=0.5em, outer sep=0mm, text width=5em, minimum height=2em, align=flush center, font=\ttfamily, node distance = 1.5cm, auto},
@@ -122,10 +122,20 @@ arrow/.style = {semithick,->,>=stealth}
 \newcommand{\pyetje}[2]{
   \vspace{6pt}
   \begin{preventpagebreak}
-    \addtocounter{Piket}{#1}
     \stepcounter{NumriPyetjes}
-    \textbf{\theNumriPyetjes. (#1p)} \trim@pre@space{#2}
+    \ifthenelse{\equal{#1}{}}
+    {
+      \textbf{\theNumriPyetjes.} \trim@pre@space{#2}
+    }
+    {
+      \addtocounter{Piket}{#1}
+      \textbf{\theNumriPyetjes. (#1p)} \trim@pre@space{#2}
+    }
   \end{preventpagebreak}
+}
+
+\lstset{
+  escapeinside={<@}{@>}
 }
 
 \newcommand{\cpplst}{
@@ -133,6 +143,19 @@ arrow/.style = {semithick,->,>=stealth}
     basicstyle=\ttfamily\small,
     language=C++,
     numbers=left,
+    numberstyle=\tiny,
+    aboveskip=0pt,
+    belowskip=2pt,
+    breaklines=true,
+    frame=single,
+    showstringspaces=false
+  }
+}
+
+\newcommand{\cpplstalt}{
+  \lstset{
+    basicstyle=\ttfamily\small,
+    language=C++,
     numberstyle=\tiny,
     aboveskip=0pt,
     belowskip=2pt,
@@ -159,6 +182,35 @@ arrow/.style = {semithick,->,>=stealth}
 }
 {
   \endpreventpagebreak
+}
+
+\lstnewenvironment{codeblockalt}
+{
+  \vspace{6pt}
+  \preventpagebreak
+  \cpplstalt
+}
+{
+  \endpreventpagebreak
+}
+
+\lstnewenvironment{ktpyetje}[3]
+{
+  \vspace{6pt}
+  \preventpagebreak
+  \addtocounter{Piket}{#1}
+  \stepcounter{NumriPyetjes}
+  \textbf{\theNumriPyetjes. (#1p)} \trim@pre@space{#3}
+  \framebox[3cm]{\parbox[c][0.32cm]{3cm}{\ifbool{zgjidhjetflag}{\hspace{0.1cm}\code{#2}}}}
+  \vspace{0pt}
+  \cpplst
+}
+{
+  \endpreventpagebreak
+}
+
+\newcommand{\inputbox}[1]{
+  \framebox[3cm]{\parbox[c][0.32cm]{3cm}{\ifbool{zgjidhjetflag}{\hspace{0.1cm}\code{#1}}}}
 }
 
 \lstnewenvironment{kpyetje}[2]
@@ -202,8 +254,8 @@ arrow/.style = {semithick,->,>=stealth}
       \renewcommand*{\arraystretch}{1.5}
       \begin{tabularx}{\textwidth}{|c|X|c|X|}
         \hline
-        \cellcolor{black!15} Emri dhe mbiemri: &   &
-        \cellcolor{black!15} ID/Indeksi:       &     \\
+        \cellcolor{black!15}Emri dhe mbiemri: & &
+        \cellcolor{black!15}ID: & \\
         \hline
       \end{tabularx}
     \end{table}
@@ -213,9 +265,9 @@ arrow/.style = {semithick,->,>=stealth}
 \newcommand{\titull}[3]{
   \vspace{8pt}
   \begin{Large}
-    \textbf{\ifbool{zgjidhjetflag}{Zgjidhjet e provimit}{Provim} në lëndën "#1", #2}
+    \textbf{\ifbool{zgjidhjetflag}{Zgjidhjet e provimit}{Provim} në lëndën ``#1'', #2}
     \hfill
-    \textbf{Gr. #3}
+    \ifthenelse{\equal{#3}{}}{}{Gr. #3}
   \end{Large}
   \vspace{1pt}
 }
@@ -223,7 +275,7 @@ arrow/.style = {semithick,->,>=stealth}
 \newcommand{\ctitull}[5]{
   \vspace{8pt}
   \begin{Large}
-    \textbf{\ifbool{zgjidhjetflag}{Zgjidhjet e #5}{#4} në lëndën "#1", #2}
+    \textbf{\ifbool{zgjidhjetflag}{Zgjidhjet e #5}{#4} në lëndën ``#1'', #2}
     \hfill
     \textbf{Gr. #3}
   \end{Large}
@@ -244,4 +296,8 @@ arrow/.style = {semithick,->,>=stealth}
 
 \AtEndDocument{
   \message{Detyra: \theNumriPyetjes, total piket: \thePiket}
+}
+
+\newcommand{\br}{
+  \vspace{0.2cm}
 }
